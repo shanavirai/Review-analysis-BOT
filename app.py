@@ -1,3 +1,5 @@
+!pip install openai==0.28
+!python -m spacy download en_core_web_sm
 import openai
 import spacy
 import streamlit as st
