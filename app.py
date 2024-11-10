@@ -1,9 +1,22 @@
 import openai
 import spacy
 import streamlit as st
+import subprocess
 
 # Set OpenAI API key here
 openai.api_key = st.secrets["OPENAI_API_KEY"]  # It's better to use Streamlit's Secrets Manager for security
+
+# Function to ensure spaCy model is installed
+def install_spacy_model():
+    try:
+        # Try loading the spaCy model
+        spacy.load("en_core_web_sm")
+    except OSError:
+        # If the model is not installed, install it
+        subprocess.check_call([subprocess.sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
+
+# Ensure the model is installed
+install_spacy_model()
 
 # Load spaCy NER model
 nlp = spacy.load("en_core_web_sm")
