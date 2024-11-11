@@ -8,43 +8,42 @@ try:
 except KeyError:
     st.error("Please set the OpenAI API key in the Streamlit secrets.")
 
-# Function to ensure spaCy model is installed without using subprocess
-def install_spacy_model():
+# Function to ensure spaCy model is installed
+def ensure_spacy_model_installed():
     try:
         spacy.load("en_core_web_sm")
+        return True
     except OSError:
-        st.warning("The spaCy model 'en_core_web_sm' is not installed. Please install it by running the following command in your environment:\n\npython -m spacy download en_core_web_sm")
+        return False
 
-# Ensure the model is installed
-install_spacy_model()
+# Check if spaCy model is installed; show error and stop execution if not
+if not ensure_spacy_model_installed():
+    st.error("The spaCy model 'en_core_web_sm' is not installed. Ensure that your deployment script includes:\n\npython -m spacy download en_core_web_sm")
+    st.stop()  # Stop execution if the model isn't found
 
 # Load spaCy NER model
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError as e:
-    st.error("Failed to load spaCy NER model. Ensure the model is installed.")
-    nlp = None
+nlp = spacy.load("en_core_web_sm")
 
 # Function to analyze sentiment with word-level contributions using GPT
 def analyze_sentiment_with_words(review, category):
     prompt = f"Analyze the sentiment of the following {category} review and provide sentiment contributions for each word (percentage):\n\nReview: {review}"
 
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",  # Use a compatible model for OpenAI API version <1.0
-            prompt=prompt,
-            max_tokens=500
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a sentiment analysis assistant."},
+                {"role": "user", "content": prompt},
+            ]
         )
-        sentiment_analysis = response['choices'][0]['text']
+        sentiment_analysis = response['choices'][0]['message']['content']
         return sentiment_analysis.strip()
-    except Exception as e:
+    except Exception as e:  # Handle any OpenAI error
         st.error(f"OpenAI API error: {e}")
         return ""
 
 # Function to perform Named Entity Recognition (NER)
 def extract_entities(review):
-    if nlp is None:
-        return []
     doc = nlp(review)
     entities = [(ent.text, ent.label_) for ent in doc.ents]
     return entities
