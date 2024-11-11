@@ -1,7 +1,6 @@
 import openai
 import spacy
 import streamlit as st
-import subprocess
 
 # Function to set the OpenAI API key securely
 try:
@@ -9,12 +8,12 @@ try:
 except KeyError:
     st.error("Please set the OpenAI API key in the Streamlit secrets.")
 
-# Function to ensure spaCy model is installed
+# Function to ensure spaCy model is installed without using subprocess
 def install_spacy_model():
     try:
         spacy.load("en_core_web_sm")
     except OSError:
-        subprocess.check_call([subprocess.sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
+        st.warning("The spaCy model 'en_core_web_sm' is not installed. Please install it by running the following command in your environment:\n\npython -m spacy download en_core_web_sm")
 
 # Ensure the model is installed
 install_spacy_model()
