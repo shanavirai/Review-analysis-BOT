@@ -1,3 +1,4 @@
 openai
 spacy
 streamlit
+os
